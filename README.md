@@ -4,6 +4,14 @@ A Flask-based fitness tracker that helps users monitor their daily calorie intak
 
 ---
 
+## 🚀 Live Deployment
+
+The latest version of this application is deployed and running live on Railway.
+
+**Access the App Here:** [AI-Powered Fitness Tracker App](https://ai-powered-fitness-calorie-tracker-app-production.up.railway.app)
+
+---
+
 ## 📌 Features
 
 - 🔐 Simple login (name, age, height, weight, gender, activity level)
