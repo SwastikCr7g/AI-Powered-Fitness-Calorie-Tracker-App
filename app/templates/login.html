@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fitness Tracker - Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="login-body">
+  <div class="login-container">
+    <h1>Welcome to Your Fitness Tracker 💪</h1>
+    <p>Track your calories, eat smart, and stay fit!</p>
+
+    <form action="{{ url_for('login') }}" method="POST" class="login-form">
+      <input type="text" name="name" placeholder="Enter your name" required />
+      <input type="number" name="age" placeholder="Age (Years)" min="1" required />
+      <select name="gender" required>
+        <option value="" disabled selected>Select Gender</option>
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select>
+      <input type="number" name="weight" placeholder="Weight (kg)" step="0.1" required />
+      <input type="number" name="height" placeholder="Height (cm)" step="0.1" required />
+      <select name="activity_level" required>
+        <option value="" disabled selected>Select Activity Level</option>
+        <option value="sedentary">Sedentary (little/no exercise)</option>
+        <option value="light">Lightly active (1–3 days/week)</option>
+        <option value="moderate">Moderately active (3–5 days/week)</option>
+        <option value="very">Very active (6–7 days/week)</option>
+        <option value="extra">Extra active (hard training or physical job)</option>
+      </select>
+      <button type="submit">Track Me →</button>
+    </form>
+  </div>
+</body>
+</html>

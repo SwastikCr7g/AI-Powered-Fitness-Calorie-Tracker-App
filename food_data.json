@@ -1,0 +1,10 @@
+[
+  {"name": "Apple", "calories": 95},
+  {"name": "Banana", "calories": 105},
+  {"name": "Grilled Chicken", "calories": 165},
+  {"name": "Boiled Egg", "calories": 78},
+  {"name": "Rice", "calories": 206},
+  {"name": "Chapati", "calories": 104},
+  {"name": "Paneer", "calories": 265},
+  {"name": "Milk", "calories": 103}
+]
