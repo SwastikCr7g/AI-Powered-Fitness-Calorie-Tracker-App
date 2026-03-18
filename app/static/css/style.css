@@ -1,152 +1,97 @@
-/* Global styles */
+/* Next-Gen Fitness Tracker - Global UI */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600&display=swap');
+
+:root {
+    --bg-color: #080a0c;
+    --card-bg: rgba(15, 20, 25, 0.7);
+    --accent-neon: #00f2ff;
+    --accent-purple: #7000ff;
+    --text-main: #e2e8f0;
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(to right, #1DB954, #2E8B57);
-    color: #fff;
     margin: 0;
-    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    background: radial-gradient(circle at center, #111827 0%, #080a0c 100%);
+    color: var(--text-main);
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
-/* Login page styles */
+/* Glassmorphism Container */
 .login-container {
-    max-width: 450px;
-    background: rgba(0, 0, 0, 0.3);
-    margin: 80px auto;
+    max-width: 480px;
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    margin: 60px auto;
     padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+    border-radius: 24px;
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 0 40px rgba(0, 242, 255, 0.1);
     text-align: center;
+    animation: slideUp 0.8s ease-out;
 }
 
-.login-container h1 {
-    margin-bottom: 10px;
-    font-size: 30px;
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.login-container p {
-    margin-bottom: 25px;
-    font-size: 16px;
+h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    letter-spacing: 1px;
+    background: linear-gradient(to right, var(--accent-neon), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 30px;
 }
 
-.login-form input,
-.login-form select {
-    width: 90%;
-    padding: 12px;
-    margin: 10px 0;
-    border: none;
-    border-radius: 10px;
-    font-size: 16px;
+.login-form input, .login-form select {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    padding: 14px;
+    margin: 12px 0;
+    border-radius: 12px;
+    color: white;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.login-form input:focus, .login-form select:focus {
+    outline: none;
+    border-color: var(--accent-neon);
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+    background: rgba(255, 255, 255, 0.06);
 }
 
 .login-form button {
     width: 100%;
-    padding: 12px;
-    background: #FF7043;
+    margin-top: 20px;
+    padding: 16px;
+    background: linear-gradient(45deg, #00f2ff, #7000ff);
     border: none;
     border-radius: 12px;
-    font-size: 18px;
-    font-weight: bold;
     color: white;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: bold;
+    font-size: 16px;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: transform 0.3s, box-shadow 0.3s;
+    text-transform: uppercase;
 }
 
 .login-form button:hover {
-    background: #F4511E;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(112, 0, 255, 0.4);
 }
 
-/* Dashboard styles */
-.dashboard {
-    max-width: 1000px;
-    margin: 40px auto;
-    padding: 30px;
-    background-color: rgba(255, 255, 255, 0.07);
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    text-align: center;
-}
-
-.card-row {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    margin-bottom: 30px;
-}
-
-.card {
-    background: white;
-    color: #333;
-    flex: 1 1 45%;
-    margin: 10px;
-    padding: 20px;
-    border-radius: 18px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-    text-align: center;
-    transition: transform 0.2s ease;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-}
-
-.circle {
-    width: 160px;
-    height: 160px;
-    margin: 20px auto;
-    border-radius: 50%;
-    border: 10px solid #fff;
-    background: linear-gradient(to top, #FFA726, #FFEB3B);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    font-weight: bold;
-    color: #333;
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-}
-
-form input,
-form select {
-    width: 80%;
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    font-size: 15px;
-}
-
-form button {
-    background-color: #26C6DA;
+/* Custom Select Styling */
+select option {
+    background-color: #111;
     color: white;
-    padding: 12px 24px;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-}
-
-form button:hover {
-    background-color: #00ACC1;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .card-row {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .card {
-        width: 90%;
-    }
-
-    .login-container {
-        width: 90%;
-    }
 }

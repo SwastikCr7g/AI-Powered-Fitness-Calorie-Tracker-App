@@ -2,174 +2,174 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Fitness Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron&family=Montserrat&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Fitness - Command Center</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background: linear-gradient(to right, #00c6ff, #0072ff);
-            color: white;
-            text-align: center;
-            padding: 40px;
-        }
-
-        h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 36px;
-            margin-bottom: 20px;
-        }
-
-        .info-box {
-            background: rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 30px;
-            margin: 20px auto;
-            width: 80%;
-            max-width: 500px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-        }
-
-        input[type="number"], select {
-            padding: 10px;
-            border-radius: 8px;
-            border: none;
-            width: 60%;
-            margin-right: 10px;
-            margin-top: 10px;
-        }
-
-        button, .link-button {
-            padding: 10px 20px;
-            border: none;
-            background: #00ff9c;
-            color: black;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 10px;
-        }
-
-        .circle-chart {
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            max-width: 1300px;
             margin: 30px auto;
-            width: 200px;
-            height: 200px;
-            background: conic-gradient(#00ff9c calc(var(--percentage) * 1%), #fff 0);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            font-weight: bold;
-            position: relative;
+            padding: 0 20px;
         }
 
-        .circle-chart::before {
-            content: "";
-            position: absolute;
-            width: 140px;
-            height: 140px;
-            background: #111;
-            border-radius: 50%;
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            padding: 25px;
+            border-radius: 24px;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: border-color 0.3s ease;
         }
 
-        .circle-chart span {
-            position: absolute;
-        }
+        .stat-card:hover { border-color: var(--accent-neon); }
 
-        ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
+        .macro-grid { display: flex; justify-content: space-between; margin-top: 20px; gap: 10px; }
+        .macro-box { text-align: center; flex: 1; padding: 15px 5px; background: rgba(255,255,255,0.02); border-radius: 15px; border: 1px solid var(--glass-border); }
+        .macro-label { font-size: 0.7rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
+        .macro-value { font-family: 'Orbitron'; font-size: 1.1rem; color: var(--accent-neon); }
 
-        ul li {
-            margin: 5px 0;
+        .circle-progress {
+            position: relative; width: 180px; height: 180px;
+            background: conic-gradient(var(--accent-neon) calc(var(--percentage) * 1%), #1a1a1a 0);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .circle-progress::after { content: ""; position: absolute; width: 155px; height: 155px; background: #080a0c; border-radius: 50%; }
+        .circle-progress span { position: relative; z-index: 10; font-family: 'Orbitron', sans-serif; font-size: 1.8rem; }
 
-        .top-links {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-        }
+        .search-box { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 12px; border-radius: 10px; color: white; margin-bottom: 10px; box-sizing: border-box; }
+        .history-list { max-height: 250px; overflow-y: auto; text-align: left; }
+        .history-item { background: rgba(255,255,255,0.03); margin-bottom: 8px; padding: 12px 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
 
-        .top-links-left {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-        }
+        .header-nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 50px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--glass-border); }
+
+        /* New Styles for Pro Features */
+        .water-btn { background: rgba(0, 242, 255, 0.1); border: 1px solid #00f2ff; color: #00f2ff; padding: 10px; border-radius: 10px; width: 100%; cursor: pointer; font-family: 'Orbitron'; margin-top: 10px; transition: 0.3s; }
+        .water-btn:hover { background: #00f2ff; color: black; }
     </style>
 </head>
 <body>
 
-    <!-- Top Left: Export Report -->
-    <div class="top-links-left">
-        <a href="/export-report" class="link-button">📊 Export Report</a>
-    </div>
-
-    <!-- Top Right: Logout -->
-    <div class="top-links">
-        <form action="/logout" method="post">
-            <button class="link-button" style="background:#ff4d4d;">👤 Logout</button>
+    <nav class="header-nav">
+        <a href="/export-report" class="btn-action"><i class="fas fa-download"></i> REPORT</a>
+        <h1 style="margin:0; font-size: 1.5rem; font-family: 'Orbitron';">NEXUS <span style="color: var(--accent-neon);">CORE</span></h1>
+        <form action="/logout" method="post" style="margin:0;">
+            <button class="btn-action" style="border-color: #ff4d4d; color: #ff4d4d;">RESET</button>
         </form>
-    </div>
+    </nav>
 
-    <h1>Welcome, {{ name }}!</h1>
+    <div class="dashboard-grid">
 
-    <div class="info-box">
-        <p><strong>Daily Required Calories:</strong> {{ required }}</p>
-        <p><strong>Calories Consumed:</strong> <span id="intake">{{ intake }}</span></p>
-        <p><strong>Calories Burned:</strong> <span id="burned">{{ burned }}</span></p>
-        <p><strong>Remaining Calories:</strong> <span id="remaining">{{ required - intake }}</span></p>
+        <div class="stat-card" style="text-align: center; grid-row: span 2;">
+            <h2 style="font-family: 'Orbitron'; font-size: 0.9rem; margin-bottom: 20px;">INTAKE CAPACITY</h2>
+            <div style="display:flex; justify-content:center;">
+                <div class="circle-progress" id="main-ring" style="--percentage: {{ (user.intake / user.required * 100)|round }}">
+                    <div style="z-index:10; text-align:center;">
+                        <span id="perc-display">{{ ((user.intake / user.required * 100)|round|int) }}%</span>
+                    </div>
+                </div>
+            </div>
 
-        <div class="circle-chart" style="--percentage: {{ (intake / required) * 100 if required else 0 | round(0) }}">
-            <span id="progress">{{ (intake / required) * 100 if required else 0 | round(0) }}%</span>
+            <div class="macro-grid">
+                <div class="macro-box"><div class="macro-label">Prot</div><div class="macro-value" id="p-val">{{ user.protein|round(1) }}g</div></div>
+                <div class="macro-box"><div class="macro-label">Carb</div><div class="macro-value" id="c-val">{{ user.carbs|round(1) }}g</div></div>
+                <div class="macro-box"><div class="macro-label">Fat</div><div class="macro-value" id="f-val">{{ user.fats|round(1) }}g</div></div>
+            </div>
         </div>
+
+        <div class="stat-card" style="border-left: 5px solid {{ s_color }};">
+            <h3 style="font-family:'Orbitron'; font-size:0.8rem;"><i class="fas fa-heartbeat"></i> BIO-STATUS</h3>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px;">
+                <div>
+                    <div style="font-size: 1.5rem; color: {{ s_color }}; font-family:'Orbitron';">{{ bmi }}</div>
+                    <div style="font-size: 0.8rem; text-transform: uppercase;">{{ status }}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="color:#94a3b8; font-size:0.7rem;">DAILY LIMIT</div>
+                    <div style="font-size:1.2rem; font-family:'Orbitron';">{{ user.required }}</div>
+                </div>
+            </div>
+            <div style="margin-top:15px; padding:10px; background:rgba(255,255,255,0.05); border-radius:10px; font-size:0.75rem;">
+                <i class="fas fa-robot" style="color:var(--accent-neon);"></i> {{ suggestion }}
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <h3 style="font-family:'Orbitron'; font-size:0.8rem;"><i class="fas fa-chart-pie"></i> MACRO SPLIT</h3>
+            <canvas id="macroChart" style="max-height: 140px; margin-top:10px;"></canvas>
+        </div>
+
+        <div class="stat-card" style="text-align:center;">
+            <h3 style="font-family:'Orbitron'; font-size:0.8rem;"><i class="fas fa-tint"></i> HYDRATION</h3>
+            <div style="font-size: 2rem; color: #00f2ff; margin: 10px 0; font-family:'Orbitron';" id="water-count">
+                {{ user.water }} <small style="font-size:0.8rem;">GLS</small>
+            </div>
+            <button onclick="addWater()" class="water-btn">+ LOG WATER</button>
+        </div>
+
+        <div class="stat-card">
+            <h3 style="font-family:'Orbitron'; font-size:0.8rem;"><i class="fas fa-plus-circle"></i> ADD NUTRITION</h3>
+            <input list="food-options" id="food" class="search-box" placeholder="Search Food Source...">
+            <datalist id="food-options">
+                {% for f in food_list %}<option value="{{ f }}">{% endfor %}
+            </datalist>
+            <button onclick="addFood()" class="login-form button" style="padding:12px; margin:0;">UPLOAD DATA</button>
+        </div>
+
+        <div class="stat-card">
+            <h3 style="font-family:'Orbitron'; font-size:0.8rem;"><i class="fas fa-fire"></i> EXPEL ENERGY</h3>
+            <div style="display:flex; gap:10px;">
+                <input type="number" id="burn" class="search-box" placeholder="Kcal" style="margin:0;">
+                <button onclick="addBurn()" class="login-form button" style="padding:12px; margin:0; width: 100px;">BURN</button>
+            </div>
+            <p style="margin-top:15px; font-size:0.8rem; color:#94a3b8;">Total Expelled: <span id="burn-val" style="color:#ff4d4d; font-family:'Orbitron';">{{ user.burned|int }}</span> kcal</p>
+        </div>
+
+        <div class="stat-card">
+            <h3 style="font-family:'Orbitron'; font-size:0.8rem;"><i class="fas fa-stream"></i> SYSTEM LOGS</h3>
+            <div class="history-list" id="history-box">
+                {% set hist = user.history|from_json %}
+                {% for item in hist %}
+                <div class="history-item">
+                    <span>{{ item.item }}</span>
+                    <span style="color: var(--accent-neon); font-family:'Orbitron';">+{{ item.calories }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
     </div>
 
-    <div class="info-box">
-        <h3>Add Food</h3>
-        <select id="food">
-            <option disabled selected>Select food item</option>
-            {% for food in [
-                "Roti", "Paneer", "Dal", "Rice", "Chicken Curry", "Samosa", "Dosa", "Idli", "Chole", "Bhature",
-                "Paratha", "Upma", "Poha", "Vada", "Aloo Sabzi", "Rajma", "Pulao", "Biryani", "Cutlet", "Pakora",
-                "Kofta", "Palak Paneer", "Chana Masala", "Mutter Paneer", "Aloo Paratha", "Curd", "Butter Naan",
-                "Bread", "Egg", "Fish Curry", "Milk", "Banana", "Apple", "Orange", "Grapes", "Mango", "Pineapple",
-                "Papaya", "Lassi", "Halwa", "Gulab Jamun", "Rasgulla", "Kheer", "Jalebi", "Ice Cream", "Tea", "Coffee",
-                "Vegetable Soup", "Corn", "Sprouts", "Green Salad", "Sandwich", "Maggi", "Pav Bhaji", "Vada Pav",
-                "Misal Pav", "Bhel Puri", "Sev Puri", "Dhokla", "Khichdi", "Thepla", "Undhiyu", "Sheera",
-                "Sabudana Khichdi", "Thalipeeth", "Modak", "Shrikhand", "Aamras", "Zunka", "Bhakri", "Kanda Poha",
-                "Besan Chilla", "Methi Thepla", "Batata Wada", "Kachori", "Sabji", "Tofu", "Tofu Curry", "Oats",
-                "Oats Upma", "Veg Frankie", "Chana Chaat", "Sprouts Salad", "Veg Wrap", "Paneer Roll",
-                "Moong Dal Chilla", "Lemon Water", "Buttermilk", "Soy Milk", "Egg Curry", "Rava Upma", "Paneer Bhurji"
-            ] %}
-            <option value="{{ food }}">{{ food }}</option>
-            {% endfor %}
-        </select>
-        <button onclick="addFood()">Add</button>
-    </div>
-
-    <div class="info-box">
-        <h3>🍕 Food History</h3>
-        <ul id="food-history">
-            {% for food in food_history %}
-            <li>{{ food.item }} - {{ food.calories }} kcal</li>
-            {% endfor %}
-        </ul>
-    </div>
-
-    <div class="info-box">
-        <h3>Add Burned Calories</h3>
-        <input type="number" id="burn" placeholder="Calories burned">
-        <button onclick="addBurn()">Add</button>
-    </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // 📊 Initialize Macro Chart
+        const ctx = document.getElementById('macroChart').getContext('2d');
+        let macroChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Prot', 'Carb', 'Fat'],
+                datasets: [{
+                    data: [{{ user.protein }}, {{ user.carbs }}, {{ user.fats }}],
+                    backgroundColor: ['#7000ff', '#00f2ff', '#ffcc00'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                cutout: '70%',
+                plugins: { legend: { position: 'right', labels: { color: 'white', font: { size: 10 } } } }
+            }
+        });
+
         function addFood() {
-            const food = document.getElementById("food").value;
+            const foodInput = document.getElementById("food");
+            const food = foodInput.value;
+            if(!food) return;
+
             fetch('/add-food', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -177,32 +177,48 @@
             })
             .then(res => res.json())
             .then(data => {
-                document.getElementById("intake").innerText = data.total_intake;
-                document.getElementById("remaining").innerText = data.remaining;
-                let percentage = (data.total_intake / {{ required }}) * 100;
-                document.querySelector('.circle-chart').style.setProperty('--percentage', percentage);
-                document.getElementById("progress").innerText = Math.min(Math.round(percentage), 100) + "%";
+                if(data.error) return alert(data.error);
 
-                const foodHistory = document.getElementById('food-history');
-                const newItem = document.createElement('li');
-                newItem.textContent = `${food} - ${data.calories} kcal`;
-                foodHistory.appendChild(newItem);
+                document.getElementById("p-val").innerText = data.protein + "g";
+                document.getElementById("c-val").innerText = data.carbs + "g";
+                document.getElementById("f-val").innerText = data.fats + "g";
+
+                let perc = Math.min(Math.round((data.total_intake / {{ user.required }}) * 100), 100);
+                document.getElementById("main-ring").style.setProperty('--percentage', perc);
+                document.getElementById("perc-display").innerText = perc + "%";
+
+                // Update Chart
+                macroChart.data.datasets[0].data = [data.protein, data.carbs, data.fats];
+                macroChart.update();
+
+                const box = document.getElementById('history-box');
+                box.innerHTML = `<div class="history-item"><span>${food}</span><span style="color: var(--accent-neon); font-family:'Orbitron';">+${data.calories}</span></div>` + box.innerHTML;
+                foodInput.value = "";
+            });
+        }
+
+        function addWater() {
+            fetch('/add-water', {method: 'POST'})
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('water-count').innerHTML = `${data.water} <small style="font-size:0.8rem;">GLS</small>`;
             });
         }
 
         function addBurn() {
-            const burn = document.getElementById("burn").value;
+            const burnInput = document.getElementById("burn");
+            if(!burnInput.value) return;
             fetch('/add-burn', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ burn: burn })
+                body: JSON.stringify({ burn: burnInput.value })
             })
             .then(res => res.json())
             .then(data => {
-                document.getElementById("burned").innerText = data.total_burned;
+                document.getElementById("burn-val").innerText = data.total_burned;
+                burnInput.value = '';
             });
         }
     </script>
-
 </body>
 </html>
