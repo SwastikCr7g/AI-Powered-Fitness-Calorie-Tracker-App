@@ -1,8 +1,7 @@
 from app import app
-import app.routes   # ✅ VERY IMPORTANT (routes register karega)
+import app.routes
 
-# For Gunicorn
-application = app
+application = app   # ✅ THIS is BEST PRACTICE
 
 if __name__ == "__main__":
     import os
