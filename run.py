@@ -1,8 +1,8 @@
 from app import app
+import app.routes   # ✅ VERY IMPORTANT (routes register karega)
 
-# Render / Gunicorn will use this
-if __name__ != "__main__":
-    application = app
+# For Gunicorn
+application = app
 
 if __name__ == "__main__":
     import os
