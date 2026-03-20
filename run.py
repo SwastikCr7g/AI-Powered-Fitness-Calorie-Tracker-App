@@ -1,7 +1,6 @@
-from app import app
-import app.routes
+from app import create_app
 
-application = app   # ✅ THIS is BEST PRACTICE
+app = create_app()
 
 if __name__ == "__main__":
     import os

@@ -1,18 +1,21 @@
-from flask import render_template, request, redirect, session, jsonify, send_file
-from app import app
+from flask import Blueprint, render_template, request, redirect, session, jsonify, send_file
 from app.models import db, User
 from app.utils.calorie_predictor import calculate_required_calories, get_bmi_status
 from app.utils.food_database import FOOD_DATA, indian_foods
 import io
 import json
 
-# ✅ Database initialize safely (no duplicate issues)
-with app.app_context():
+# ✅ Blueprint create
+main = Blueprint('main', __name__)
+
+# ✅ DB init safe (runs once per request cycle safely)
+@main.before_app_request
+def create_tables():
     db.create_all()
 
 
-# ✅ HOME / LOGIN ROUTE (FIXED)
-@app.route('/', methods=['GET', 'POST'])
+# ✅ HOME / LOGIN ROUTE
+@main.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         try:
@@ -61,7 +64,7 @@ def login():
 
 
 # ✅ DASHBOARD
-@app.route('/dashboard')
+@main.route('/dashboard')
 def dashboard():
     u_id = session.get('user_id')
 
@@ -97,7 +100,7 @@ def dashboard():
 
 
 # ✅ ADD FOOD
-@app.route('/add-food', methods=['POST'])
+@main.route('/add-food', methods=['POST'])
 def add_food():
     user = User.query.get(session.get('user_id'))
 
@@ -140,7 +143,7 @@ def add_food():
 
 
 # ✅ ADD WATER
-@app.route('/add-water', methods=['POST'])
+@main.route('/add-water', methods=['POST'])
 def add_water():
     user = User.query.get(session.get('user_id'))
 
@@ -153,7 +156,7 @@ def add_water():
 
 
 # ✅ ADD BURN
-@app.route('/add-burn', methods=['POST'])
+@main.route('/add-burn', methods=['POST'])
 def add_burn():
     user = User.query.get(session.get('user_id'))
 
@@ -171,14 +174,14 @@ def add_burn():
 
 
 # ✅ LOGOUT
-@app.route('/logout', methods=['POST'])
+@main.route('/logout', methods=['POST'])
 def logout():
     session.clear()
     return redirect('/')
 
 
 # ✅ EXPORT REPORT
-@app.route('/export-report', methods=['GET'])
+@main.route('/export-report', methods=['GET'])
 def export_report():
     user = User.query.get(session.get('user_id'))
 
