@@ -1,22 +1,19 @@
-from flask import Blueprint, render_template, request, redirect, session, jsonify, send_file
+from flask import render_template, request, redirect, session, jsonify, send_file
+from app import app
 from app.models import db, User
 from app.utils.calorie_predictor import calculate_required_calories, get_bmi_status
 from app.utils.food_database import FOOD_DATA, indian_foods
 import io
 import json
 
-# ✅ Blueprint create
-main = Blueprint('main', __name__)
-
-# ✅ DB init safe (runs once per request cycle safely)
-@main.before_app_request
-def create_tables():
+# Database initialize on startup
+with app.app_context():
     db.create_all()
 
 
-# ✅ HOME / LOGIN ROUTE
-@main.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def login():
+    """System Authentication & Bio-Data Initialization"""
     if request.method == 'POST':
         try:
             name = request.form['name']
@@ -26,107 +23,88 @@ def login():
             w = float(request.form['weight'])
             act = request.form['activity_level']
 
-            # Calculate calories
+            # Calculate daily fuel requirement
             req = calculate_required_calories(gender, age, w, h, act)
 
-            # Check existing user
+            # Persistence Check: Update existing user or create new
             user = User.query.filter_by(name=name).first()
-
             if not user:
-                user = User(
-                    name=name,
-                    required=req,
-                    weight=w,
-                    height=h,
-                    intake=0,
-                    protein=0,
-                    carbs=0,
-                    fats=0,
-                    water=0,
-                    burned=0,
-                    history="[]"
-                )
+                # Initialize history as an empty JSON list to prevent Template errors
+                user = User(name=name, required=req, weight=w, height=h, history='[]')
                 db.session.add(user)
             else:
                 user.required = req
-                user.weight = w
-                user.height = h
+                user.weight, user.height = w, h
 
             db.session.commit()
             session['user_id'] = user.id
-
             return redirect('/dashboard')
-
-        except Exception as e:
-            return f"Error: {str(e)}"
+        except (ValueError, KeyError):
+            return render_template('login.html', error="Invalid input data. Please check your biometrics.")
 
     return render_template('login.html')
 
 
-# ✅ DASHBOARD
-@main.route('/dashboard')
+@app.route('/dashboard')
 def dashboard():
+    """Central Command Center Dashboard"""
     u_id = session.get('user_id')
-
     if not u_id:
         return redirect('/')
 
     user = User.query.get(u_id)
-
     if not user:
         return redirect('/')
 
-    # BMI calculation
+    # Calculate Bio-Metrics
     bmi, status, color = get_bmi_status(user.weight, user.height)
 
-    # AI suggestion
+    # AI Suggestion Logic - Analyzing remaining capacity
     remaining = user.required - user.intake
     suggestion = "System Optimized. Continue following the protocol."
 
     if remaining > 150:
+        # Filter healthy options from the database within the remaining limit
         opts = [f['name'] for f in indian_foods if 50 < f['calories'] <= remaining]
         if opts:
-            suggestion = f"AI Recommends: Consume '{opts[0]}'"
+            suggestion = f"AI Recommends: Consume '{opts[0]}' to hit your energy target."
 
-    return render_template(
-        'dashboard.html',
-        user=user,
-        bmi=bmi,
-        status=status,
-        s_color=color,
-        suggestion=suggestion,
-        food_list=sorted([f['name'] for f in FOOD_DATA.values()])
-    )
+    return render_template('dashboard.html',
+                           user=user,
+                           bmi=bmi,
+                           status=status,
+                           s_color=color,
+                           suggestion=suggestion,
+                           food_list=sorted([f['name'] for f in FOOD_DATA.values()]))
 
 
-# ✅ ADD FOOD
-@main.route('/add-food', methods=['POST'])
+@app.route('/add-food', methods=['POST'])
 def add_food():
+    """Log Nutritional Intake into System"""
     user = User.query.get(session.get('user_id'))
-
     if not user:
         return jsonify({'error': 'Unauthorized'}), 401
 
-    food_name = request.json.get('food', '').lower()
+    data = request.get_json()
+    food_name = data.get('food', '').lower()
     f = FOOD_DATA.get(food_name)
 
     if f:
+        # Update Core Stats
         user.intake += f['calories']
         user.protein += f.get('protein', 0)
         user.carbs += f.get('carbs', 0)
         user.fats += f.get('fats', 0)
 
+        # Update History JSON safely
         try:
-            hist = json.loads(user.history)
+            hist = json.loads(user.history) if user.history else []
         except:
             hist = []
 
-        hist.insert(0, {
-            'item': f['name'],
-            'calories': f['calories']
-        })
-
+        hist.insert(0, {'item': f['name'], 'calories': f['calories']})
         user.history = json.dumps(hist)
+
         db.session.commit()
 
         return jsonify({
@@ -139,63 +117,58 @@ def add_food():
             'calories': f['calories']
         })
 
-    return jsonify({'error': 'Food not found'}), 404
+    return jsonify({'error': 'Fuel source not identified'}), 404
 
 
-# ✅ ADD WATER
-@main.route('/add-water', methods=['POST'])
+@app.route('/add-water', methods=['POST'])
 def add_water():
     user = User.query.get(session.get('user_id'))
-
     if user:
         user.water += 1
         db.session.commit()
         return jsonify({'water': user.water})
-
     return jsonify({'error': 'Unauthorized'}), 401
 
 
-# ✅ ADD BURN
-@main.route('/add-burn', methods=['POST'])
+@app.route('/add-burn', methods=['POST'])
 def add_burn():
     user = User.query.get(session.get('user_id'))
-
     if user:
+        data = request.get_json()
+        burned = data.get('burn', 0)
         try:
-            burned = int(request.json.get('burn', 0))
-            user.burned += burned
+            user.burned += int(burned)
             db.session.commit()
             return jsonify({'total_burned': user.burned})
-
-        except:
-            return jsonify({'error': 'Invalid value'}), 400
-
+        except (ValueError, TypeError):
+            return jsonify({'error': 'Invalid burn value'}), 400
     return jsonify({'error': 'Unauthorized'}), 401
 
 
-# ✅ LOGOUT
-@main.route('/logout', methods=['POST'])
+@app.route('/logout')
 def logout():
     session.clear()
     return redirect('/')
 
 
-# ✅ EXPORT REPORT
-@main.route('/export-report', methods=['GET'])
+@app.route('/export-report')
 def export_report():
+    """Generate and Download Bio-Metrics Report"""
     user = User.query.get(session.get('user_id'))
-
     if not user:
         return redirect('/')
 
     bmi, status, _ = get_bmi_status(user.weight, user.height)
 
+    # Safe history loading
+    try:
+        hist_data = json.loads(user.history) if user.history else []
+    except:
+        hist_data = []
+
     report = {
         'user': user.name,
-        'bio_metrics': {
-            'BMI': bmi,
-            'Status': status
-        },
+        'bio_metrics': {'BMI': bmi, 'Status': status},
         'daily_stats': {
             'target_calories': user.required,
             'total_intake': user.intake,
@@ -207,7 +180,7 @@ def export_report():
                 'fats_g': round(user.fats, 1)
             }
         },
-        'food_logs': json.loads(user.history)
+        'food_logs': hist_data
     }
 
     buffer = io.BytesIO()
@@ -218,5 +191,5 @@ def export_report():
         buffer,
         mimetype='application/json',
         as_attachment=True,
-        download_name=f'Nexus_{user.name}_Report.json'
+        download_name=f'Fitness_Report_{user.name}.json'
     )

@@ -3,10 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Fitness - Command Center</title>
+    <title>Fitness Pro - Command Center</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
+        :root {
+            --accent-neon: #00f2ff;
+            --card-bg: rgba(13, 17, 23, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -33,6 +39,7 @@
         .macro-label { font-size: 0.7rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
         .macro-value { font-family: 'Orbitron'; font-size: 1.1rem; color: var(--accent-neon); }
 
+        /* Smooth Progress Ring */
         .circle-progress {
             position: relative; width: 180px; height: 180px;
             background: conic-gradient(var(--accent-neon) calc(var(--percentage) * 1%), #1a1a1a 0);
@@ -48,7 +55,6 @@
 
         .header-nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 50px; background: rgba(0,0,0,0.3); border-bottom: 1px solid var(--glass-border); }
 
-        /* New Styles for Pro Features */
         .water-btn { background: rgba(0, 242, 255, 0.1); border: 1px solid #00f2ff; color: #00f2ff; padding: 10px; border-radius: 10px; width: 100%; cursor: pointer; font-family: 'Orbitron'; margin-top: 10px; transition: 0.3s; }
         .water-btn:hover { background: #00f2ff; color: black; }
     </style>
@@ -57,20 +63,18 @@
 
     <nav class="header-nav">
         <a href="/export-report" class="btn-action"><i class="fas fa-download"></i> REPORT</a>
-        <h1 style="margin:0; font-size: 1.5rem; font-family: 'Orbitron';">NEXUS <span style="color: var(--accent-neon);">CORE</span></h1>
-        <form action="/logout" method="post" style="margin:0;">
-            <button class="btn-action" style="border-color: #ff4d4d; color: #ff4d4d;">RESET</button>
-        </form>
+        <h1 style="margin:0; font-size: 1.5rem; font-family: 'Orbitron';">FITNESS <span style="color: var(--accent-neon);">PRO</span></h1>
+        <a href="/logout" class="btn-action" style="border-color: #ff4d4d; color: #ff4d4d; text-decoration: none;">LOGOUT</a>
     </nav>
 
     <div class="dashboard-grid">
 
         <div class="stat-card" style="text-align: center; grid-row: span 2;">
-            <h2 style="font-family: 'Orbitron'; font-size: 0.9rem; margin-bottom: 20px;">INTAKE CAPACITY</h2>
+            <h2 style="font-family: 'Orbitron'; font-size: 0.9rem; margin-bottom: 20px;">FUEL CAPACITY</h2>
             <div style="display:flex; justify-content:center;">
-                <div class="circle-progress" id="main-ring" style="--percentage: {{ (user.intake / user.required * 100)|round }}">
+                <div class="circle-progress" id="main-ring" style="--percentage: {{ ((user.intake / user.required) * 100)|round }}">
                     <div style="z-index:10; text-align:center;">
-                        <span id="perc-display">{{ ((user.intake / user.required * 100)|round|int) }}%</span>
+                        <span id="perc-display">{{ ((user.intake / user.required) * 100)|round|int }}%</span>
                     </div>
                 </div>
             </div>
@@ -90,8 +94,8 @@
                     <div style="font-size: 0.8rem; text-transform: uppercase;">{{ status }}</div>
                 </div>
                 <div style="text-align:right;">
-                    <div style="color:#94a3b8; font-size:0.7rem;">DAILY LIMIT</div>
-                    <div style="font-size:1.2rem; font-family:'Orbitron';">{{ user.required }}</div>
+                    <div style="color:#94a3b8; font-size:0.7rem;">GOAL</div>
+                    <div style="font-size:1.2rem; font-family:'Orbitron';">{{ user.required }} kcal</div>
                 </div>
             </div>
             <div style="margin-top:15px; padding:10px; background:rgba(255,255,255,0.05); border-radius:10px; font-size:0.75rem;">
@@ -100,7 +104,7 @@
         </div>
 
         <div class="stat-card">
-            <h3 style="font-family:'Orbitron'; font-size:0.8rem;"><i class="fas fa-chart-pie"></i> MACRO SPLIT</h3>
+            <h3 style="font-family:'Orbitron'; font-size:0.8rem;"><i class="fas fa-chart-pie"></i> MACRO BREAKDOWN</h3>
             <canvas id="macroChart" style="max-height: 140px; margin-top:10px;"></canvas>
         </div>
 
@@ -113,25 +117,25 @@
         </div>
 
         <div class="stat-card">
-            <h3 style="font-family:'Orbitron'; font-size:0.8rem;"><i class="fas fa-plus-circle"></i> ADD NUTRITION</h3>
+            <h3 style="font-family:'Orbitron'; font-size:0.8rem;"><i class="fas fa-plus-circle"></i> LOG INTAKE</h3>
             <input list="food-options" id="food" class="search-box" placeholder="Search Food Source...">
             <datalist id="food-options">
                 {% for f in food_list %}<option value="{{ f }}">{% endfor %}
             </datalist>
-            <button onclick="addFood()" class="login-form button" style="padding:12px; margin:0;">UPLOAD DATA</button>
+            <button onclick="addFood()" class="btn-action" style="width:100%; margin:0; padding:12px;">UPDATE BIO-DATA</button>
         </div>
 
         <div class="stat-card">
-            <h3 style="font-family:'Orbitron'; font-size:0.8rem;"><i class="fas fa-fire"></i> EXPEL ENERGY</h3>
+            <h3 style="font-family:'Orbitron'; font-size:0.8rem;"><i class="fas fa-fire"></i> CALORIE BURN</h3>
             <div style="display:flex; gap:10px;">
                 <input type="number" id="burn" class="search-box" placeholder="Kcal" style="margin:0;">
-                <button onclick="addBurn()" class="login-form button" style="padding:12px; margin:0; width: 100px;">BURN</button>
+                <button onclick="addBurn()" class="btn-action" style="padding:12px; margin:0; width: 100px;">BURN</button>
             </div>
-            <p style="margin-top:15px; font-size:0.8rem; color:#94a3b8;">Total Expelled: <span id="burn-val" style="color:#ff4d4d; font-family:'Orbitron';">{{ user.burned|int }}</span> kcal</p>
+            <p style="margin-top:15px; font-size:0.8rem; color:#94a3b8;">Energy Expelled: <span id="burn-val" style="color:#ff4d4d; font-family:'Orbitron';">{{ user.burned|int }}</span> kcal</p>
         </div>
 
         <div class="stat-card">
-            <h3 style="font-family:'Orbitron'; font-size:0.8rem;"><i class="fas fa-stream"></i> SYSTEM LOGS</h3>
+            <h3 style="font-family:'Orbitron'; font-size:0.8rem;"><i class="fas fa-stream"></i> RECENT LOGS</h3>
             <div class="history-list" id="history-box">
                 {% set hist = user.history|from_json %}
                 {% for item in hist %}
@@ -160,8 +164,13 @@
                 }]
             },
             options: {
-                cutout: '70%',
-                plugins: { legend: { position: 'right', labels: { color: 'white', font: { size: 10 } } } }
+                cutout: '75%',
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { color: 'white', font: { size: 10, family: 'Orbitron' } }
+                    }
+                }
             }
         });
 
@@ -183,14 +192,17 @@
                 document.getElementById("c-val").innerText = data.carbs + "g";
                 document.getElementById("f-val").innerText = data.fats + "g";
 
-                let perc = Math.min(Math.round((data.total_intake / {{ user.required }}) * 100), 100);
+                // Update Progress Ring
+                let raw_perc = (data.total_intake / {{ user.required }}) * 100;
+                let perc = Math.min(Math.round(raw_perc), 100);
                 document.getElementById("main-ring").style.setProperty('--percentage', perc);
                 document.getElementById("perc-display").innerText = perc + "%";
 
-                // Update Chart
+                // Update Chart Safely
                 macroChart.data.datasets[0].data = [data.protein, data.carbs, data.fats];
                 macroChart.update();
 
+                // Update Logs
                 const box = document.getElementById('history-box');
                 box.innerHTML = `<div class="history-item"><span>${food}</span><span style="color: var(--accent-neon); font-family:'Orbitron';">+${data.calories}</span></div>` + box.innerHTML;
                 foodInput.value = "";

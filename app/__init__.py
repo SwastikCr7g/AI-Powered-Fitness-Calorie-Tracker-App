@@ -1,27 +1,22 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 import os
+import json  # 👈 Jaruri import JSON parsing ke liye
 
-db = SQLAlchemy()
+app = Flask(__name__)
+app.secret_key = 'nexus_secret_key_pro'
 
-def create_app():
-    app = Flask(__name__)
+# Database configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///fitness.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    app.secret_key = os.environ.get("SECRET_KEY", "fallback_secret")
+# 🛠️ CUSTOM JINJA2 FILTER (Fixes: No filter named 'from_json')
+# Ye function string ko wapas Python dictionary/list mein convert karega
+@app.template_filter('from_json')
+def from_json_filter(value):
+    try:
+        return json.loads(value) if value else {}
+    except (ValueError, TypeError):
+        return {}
 
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    db_path = os.path.join(basedir, "fitness.db")
-
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-        "DATABASE_URL",
-        f"sqlite:///{db_path}"
-    )
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-    db.init_app(app)
-
-    # ✅ Register routes
-    from app.routes import main
-    app.register_blueprint(main)
-
-    return app
+# Yahan aapke baaki imports aayenge (models, routes etc.)
+# from app import routes, models
