@@ -1,12 +1,11 @@
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 import os
 
 app = Flask(__name__)
 
-# ✅ Secure Secret Key
 app.secret_key = os.environ.get("SECRET_KEY", "fallback_secret")
 
-# ✅ Database Config (Render Safe)
 basedir = os.path.abspath(os.path.dirname(__file__))
 db_path = os.path.join(basedir, "fitness.db")
 
@@ -16,3 +15,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
 )
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+# ✅ VERY IMPORTANT (this fixes your issue)
+import app.routes
